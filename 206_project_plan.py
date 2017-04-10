@@ -52,7 +52,10 @@ class Task1(unittest.TestCase):
 		cur.execute('SELECT * FROM Movies');
 		result = cur.fetchall()
 		self.assertTrue(len(result[0])==6, "Testing that there are 6 columns in the Movies table")
-	def test_
+	def test_top_billed(self):
+		m = Movie("The Wizard of Oz")
+		self.assertTrue("Judy Garland" in m.actors, "Testing that Judy Garland is correctly in the actors list for the Wizard of Oz movie")
+		
 ## Remember to invoke all your tests...
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
