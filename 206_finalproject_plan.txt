@@ -1,0 +1,151 @@
+SI 206 W17
+Put your name here: Miguel Martinez
+
+----
+
+Which option for the final project are you choosing -- 1, 2, or 3? OPTION 2
+
+IF YOU ARE CHOOSING OPTION 3, answer the following questions: N/A.
+
+* Write 1-3 sentences summarizing what the goal of your project is:
+N/A.
+
+* What are your two data sources? Provide links to documentation or websites you will be getting data from.
+N/A.
+
+* Why are you proposing this project?
+N/A.
+
+* What will the output of this project be? What will it look like, and what information will it contain?
+N/A.
+
+* What are your concerns about this proposal?
+N/A.
+
+-----
+
+THE FOLLOWING QUESTIONS ARE FOR EVERYONE. (Though they may be easier if you are choosing Option 1 or 2, because you can reference the Option 1 or 2 instructions.)
+
+* What will at least one of the classes you're going to define be called?
+One of the classes I will define is TwitterUser, in addition to class Movie.
+
+
+* What will that class take as input to its constructor?
+For the Movie class, the constructor will accept a dictionary that represents a movie.
+For the TwitterUser class, the constructor will accept a dictionary that represents a Twitter user.
+
+
+* What will 1 instance of this class represent?
+For the Movie class, 1 instance of this class will represent a specific movie.
+For the TwitterUser class, 1 instance of this class will represent a specific user. 
+
+
+* What are 3 instance variables this class will have? What will they be called, and what information will they hold? Why are they important?
+For the Movie class: 
+	- The Title: called self.title will hold the title of the movie. Important because otherwise, we would not be able to recognize the movie.
+	- The Director: called self.director will hold the name of the director. This will be useful when searching which tweets the director was mentioned in.
+	- Its IMBD Rating: called self.rating will hold the IMBD rating of the movie. This is important because it represents the quality of the film according to critics, which we can then compare to Twitter user's opinions on the movie.
+
+For the TwitterUser Class:
+	- The Handle: called self.handle will hold the user's Twitter handle. Important because it will allow us to see the user's name who commented on the movie, director, rating etc. 
+
+* Explain 2 methods the class will have that are not the class constructor (__init__ method) by answering the following questions for each. 
+ONE METHOD:
+- What will the name of the method be?
+Movie class:
+
+def __str__(self):
+
+- What will the method do?
+This method will return a string based on the instance variables of the Movie class.
+
+- Will it take any additional input? 
+No additional input.
+
+- Will it return anything? Should it change anything about the instance/an instance variable? 
+It will return a string that reads something like "{} was directed by {} and received an aggregate score of {} on IMBD".format(self.title, self.director, self.rating). No instance variables will be changed, but they will be utilized.
+
+- Why is it useful for this class definition, in this program?
+To return an easily readable string for the user to learn basic facts about whichever movie.
+
+
+ANOTHER METHOD:
+- What will the name of the method be?
+For the Movie class:
+
+def find_languages(self):
+
+- What will the method do?
+This method will simply count the number of languages that a movie is available in from the OMDB API, as an integer.
+
+- Will it take any additional input? 
+No additional input.
+
+- Will it return anything? Should it change anything about the instance/an instance variable? 
+Yes, an integer will be return representing the number of languages that the movie is avaiable in. Yes, the instance variable self.languages of the 
+Movie class will change to this integer.
+
+- Why is it useful for this class definition, in this program?
+Because the rubric specifically asks for the number of languages for the movie, not what those languages are, so a method has to be created.
+
+[If you definitely want to have a third, feel free to answer those questions a third time, because you'll have to do so eventually. when you write documentation!]
+
+
+* What will the tables in your database be?
+Tweets Table, Users Table, and Movies Table.
+
+
+* What fields will each database table have? Which field of them is the primary key? You should list the fields for each database table here, e.g.
+Tweets:
+- text ... 
+(etc.)
+
+Tweets:
+- Tweet text
+- Tweet ID (primary key)
+- User who posted tweet (references Users table)
+- Movie search that this tweet came from (references Movies table)
+- Number of favorites
+- Number of retweets
+
+Users:
+- User ID (primary key)
+- User screen name
+- Number of favorites that user has ever made
+
+Movies:
+- ID (primary key)
+- Title of the movie
+- Director
+- Number of languages the movie has
+- IMBD rating
+- The top billed actor in movie
+
+
+
+* List, in English, 2 queries you'll want to make from your database. At least one should be a JOIN. You can always change these later, but start with  ideas you're interested in and lessen the work on yourself later on! 
+(e.g. from class examples, maybe "I want to make a query that accesses the numbers of times each user has favorited tweets, and the number of times tweets that user posted have been favorited -- so I'll be joining the Tweets table and the Users table")
+
+- I want to make a query that JOINS together the user who posted the tweet from the table Tweets, the title of the movie from the table Movies, and the tweet text from the table Tweets.
+- I want to make a second query that will SELECT all Tweet Texts from the table Tweets if the number of favorites is over a certain amount, to help
+distinguish the positive reach of the movie (and the user).
+
+
+* What are at least 2 of the data processing mechanics you're planning to use? 
+
+-I plan to use set comprehension as well as sorting.
+
+
+
+* Why will each of those be useful to you? What data might you use it on? 
+(e.g. "Set comprehension: I think I'm going to be looking for unique names and proper nouns in this big set of text, so I'm going to use a set comprehension"). 
+>>>This is especially important if you are doing Option 3, but it's important for everyone!<<<
+
+-I will use set comprehension to make sure that I have unique movie names, as well as unique twitter handles, in lists that I will accumulate.
+-I will use sorting to rank movies based on their IMBD rating in sets/lists, along with other utilizations of the sorted function.
+
+
+
+* What will your output look like? Will it be a .txt file? a CSV file? something else? What information will it contain? >>>This is especially important if you are doing Option 3, but it's important for everyone!<<<
+-My output file will be a .txt file that will contain a summary stats page of three movie titles paired with twitter user and tweet information, 
+housed on different lines. 
