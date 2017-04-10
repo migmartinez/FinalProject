@@ -133,7 +133,7 @@ distinguish the positive reach of the movie (and the user).
 
 * What are at least 2 of the data processing mechanics you're planning to use? 
 
--I plan to use set comprehension as well as sorting.
+-I plan to use set comprehension as well as the sorted function with a lambda key.
 
 
 
@@ -147,5 +147,6 @@ distinguish the positive reach of the movie (and the user).
 
 
 * What will your output look like? Will it be a .txt file? a CSV file? something else? What information will it contain? >>>This is especially important if you are doing Option 3, but it's important for everyone!<<<
+
 -My output file will be a .txt file that will contain a summary stats page of three movie titles paired with twitter user and tweet information, 
 housed on different lines. 
