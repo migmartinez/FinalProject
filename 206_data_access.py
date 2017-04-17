@@ -14,7 +14,20 @@
 
 ######### END INSTRUCTIONS #########
 
+# MIGUEL MARTINEZ
 # Put all import statements you need here.
+import unittest
+import itertools
+import collections
+import tweepy
+import twitter_info # same deal as always...
+import json
+import sqlite3
+import re
+from collections import Counter
+import sys
+import codecs
+sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
 
 # Begin filling in instructions....
 
