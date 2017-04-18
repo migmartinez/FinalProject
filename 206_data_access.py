@@ -27,6 +27,9 @@ import re
 from collections import Counter
 import sys
 import codecs
+import requests
+import omdb
+
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
 
 # Begin filling in instructions....
@@ -42,27 +45,27 @@ api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
 
 ## END TWEEPY SET UP CODE
 ## TWITTER CACHING BELOW
-CACHE_FNAME = "SI206_finalproject_cache.json"
+TWITTER_CACHE_FNAME = "SI206_finalproject_twittercache.json"
 try:
-	cache_file = open(CACHE_FNAME,'r')
-	cache_contents = cache_file.read()
-	cache_file.close()
-	CACHE_DICTION = json.loads(cache_contents)
+	twitter_cache_file = open(TWITTER_CACHE_FNAME,'r')
+	twitter_cache_contents = twitter_cache_file.read()
+	twitter_cache_file.close()
+	TWITTER_CACHE_DICTION = json.loads(twitter_cache_contents)
 except:
-	CACHE_DICTION = {}
+	TWITTER_CACHE_DICTION = {}
 
 ## Function to get user tweets from user Twitter handle.
 def get_twitter_cache(handle):
 	unique_identifier = "twitter_{}".format(handle)
-	if unique_identifier in CACHE_DICTION:
-		print('using cached data for', handle)
-		twitter_results = CACHE_DICTION[unique_identifier]
+	if unique_identifier in TWITTER_CACHE_DICTION:
+		print('using cached data for Twitter user', handle)
+		twitter_results = TWITTER_CACHE_DICTION[unique_identifier]
 	else:
-		print('getting data from internet for', handle)
+		print('getting data from internet for Twitter user', handle)
 		twitter_results = api.user_timeline(handle)
-		CACHE_DICTION[unique_identifier] = twitter_results
-		f = open(CACHE_FNAME,'w')
-		f.write(json.dumps(CACHE_DICTION))
+		TWITTER_CACHE_DICTION[unique_identifier] = twitter_results
+		f = open(TWITTER_CACHE_FNAME,'w')
+		f.write(json.dumps(TWITTER_CACHE_DICTION))
 		f.close()
 
 	twenty_tweets = []
@@ -70,10 +73,35 @@ def get_twitter_cache(handle):
 		twenty_tweets.append(tweet)
 	return twenty_tweets[:20]
 
+## OMBD CACHING BELOW
+OMDB_CACHE_FNAME = "SI206_finalproject_OMBDcache.json"
+try:
+	omdb_cache_file = open(OMDB_CACHE_FNAME,'r')
+	omdb_cache_contents = omdb_cache_file.read()
+	omdb_cache_file.close()
+	OMDB_CACHE_DICTION = json.loads(omdb_cache_contents)
+except:
+	OMDB_CACHE_DICTION = {}
+
+## Function to get movie data from OMBD movie title
+def get_movie_cache(name):
+	unique_identifier = "omdb_{}".format(name)
+	if unique_identifier in OMDB_CACHE_DICTION:
+		print('using cached data for movie', name)
+		omdb_results = OMDB_CACHE_DICTION[unique_identifier]
+	else:
+		print('getting data from internet for movie', name)
+		omdb_results = omdb.search_movie(name)
+		OMDB_CACHE_DICTION[unique_identifier] = omdb_results
+		g = open(OMDB_CACHE_FNAME, 'w')
+		g.write(json.dumps(OMDB_CACHE_DICTION))
+		g.close()
 
 
+#Invoking 
 
-
+wizard_oz = get_movie_cache("The Wizard of Oz")
+umich = get_twitter_cache("umich")
 # Put your tests here, with any edits you now need from when you turned them in with your project plan.
 class Task1(unittest.TestCase):
 	def test_twitter_cache(self):
