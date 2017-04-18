@@ -30,15 +30,90 @@ import codecs
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
 
 # Begin filling in instructions....
+## Tweepy setup below to cache twitter data, make sure that twitter_info file is present in directory.
+consumer_key = twitter_info.consumer_key
+consumer_secret = twitter_info.consumer_secret
+access_token = twitter_info.access_token
+access_token_secret = twitter_info.access_token_secret
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
 
+api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
 
+## END TWEEPY SET UP CODE
+## TWITTER CACHING BELOW
+CACHE_FNAME = "SI206_finalproject_cache.json"
+try:
+	cache_file = open(CACHE_FNAME,'r')
+	cache_contents = cache_file.read()
+	cache_file.close()
+	CACHE_DICTION = json.loads(cache_contents)
+except:
+	CACHE_DICTION = {}
 
+## Function to get user tweets from user Twitter handle.
+def get_twitter_cache(handle):
+	unique_identifier = "twitter_{}".format(handle)
+	if unique_identifier in CACHE_DICTION:
+		print('using cached data for', handle)
+		twitter_results = CACHE_DICTION[unique_identifier]
+	else:
+		print('getting data from internet for', handle)
+		twitter_results = api.user_timeline(handle)
+		CACHE_DICTION[unique_identifier] = twitter_results
+		f = open(CACHE_FNAME,'w')
+		f.write(json.dumps(CACHE_DICTION))
+		f.close()
+
+	twenty_tweets = []
+	for tweet in twitter_results:
+		twenty_tweets.append(tweet)
+	return twenty_tweets[:20]
 
 
 
 
 
 # Put your tests here, with any edits you now need from when you turned them in with your project plan.
-
+class Task1(unittest.TestCase):
+	def test_twitter_cache(self):
+		f = open("SI206_finalproject_twittercache.json", "r")
+		s = f.read()
+		f.close()
+		self.assertEqual(type(s),type(""), "Caching is not working correctly for twitter")
+	def test_OMBD_cache(self):
+		f = open("SI206_finalproject_OMBDcache.json", "r")
+		s = f.read()
+		f.close()
+		self.assertEqual(type(s), type(""), "Caching is not working correctly for OMBD")
+	def test_movie_str(self):
+		m = Movie("The Wizard of Oz")
+		self.asssertEqual(type(m.__str__()), type(""), "testing type of __str__ method, should be str")
+	def test_num_languages(self):
+		m = Movie("The Wizard of Oz")
+		self.assertEqual(m.find_languages(), 1, "testing that wizard of oz has 1 language")
+	def test_users_table(self):
+		conn = sqlite3.connect('finalproject.db')
+		cur = conn.cursor()
+		cur.execute('SELECT * FROM Users');
+		result = cur.fetchall()
+		self.assertTrue(len(result)>=1, "Testing there is at least 1 user in the User table")
+	def test_tweets_table(self):
+		conn = sqlite3.connect('finalproject.db')
+		cur = conn.cursor()
+		cur.execute('SELECT * FROM Tweets');
+		result = cur.fetchall()
+		self.assertTrue(len(result[0])==6, "Testing that there are 6 columnns in the Tweets table")
+	def test_movies_table(self):
+		conn = sqlite3.connect('finalproject.db')
+		cur = conn.cursor()
+		cur.execute('SELECT * FROM Movies');
+		result = cur.fetchall()
+		self.assertTrue(len(result[0])==6, "Testing that there are 6 columns in the Movies table")
+	def test_top_billed(self):
+		m = Movie("The Wizard of Oz")
+		self.assertTrue("Judy Garland" in m.actors, "Testing that Judy Garland is correctly in the actors list for the Wizard of Oz movie")
 
 # Remember to invoke your tests so they will run! (Recommend using the verbosity=2 argument.)
+if __name__ == "__main__":
+	unittest.main(verbosity=2)
