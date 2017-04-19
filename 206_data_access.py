@@ -126,8 +126,7 @@ wizard_oz = get_movie_cache("The Wizard of Oz")
 umich = get_twitter_cache("umich")
 actor = star_actor_tweets("Judy Garland")
 
-#print(actor)
-#print(wizard_oz)
+
 
 #Class Setup
 class Movie():
@@ -179,17 +178,16 @@ class TwitterUser():
 		else:
 			self.favourites_count = 0
 	
-
-class Tweet():
-	def __init__(self, tweet_dict):
-		if 'text'
+## FINISH CLASS TWEET
+#class Tweet():
+#	def __init__(self, tweet_dict):
+	#	if 'text'
 
 
 #Class invocation
 wizard_class = Movie(wizard_oz)
 twitteruser_class = TwitterUser(umich)
-#print(wizard_class.actors)
-#print(twitteruser_class.id)
+
 
 #Database file setup
 conn = sqlite3.connect('206_finalproject.db')
@@ -209,7 +207,7 @@ conn.commit()
 cur.execute("INSERT INTO Movies (movie_id, movie_title, director, num_languages, imdb_rating, top_actor) VALUES (?, ?, ?, ?, ?, ?)", (wizard_class.imdb_id, wizard_class.title, wizard_class.director, wizard_class.language, wizard_class.imdb_rating, wizard_class.actors[0]))
 conn.commit()
 
-#Adding data to Tweets table
+#Adding data to Tweets table:
 
 
 # Put your tests here, with any edits you now need from when you turned them in with your project plan.
