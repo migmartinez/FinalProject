@@ -38,7 +38,7 @@ try:
 except:
 	TWITTER_CACHE_DICTION = {}
 
-## Function to get user tweets from user Twitter handle.
+## Function to get tweets from Twitter handle.
 def get_twitter_cache(handle):
 	unique_identifier = "twitter_{}".format(handle)
 	if unique_identifier in TWITTER_CACHE_DICTION:
@@ -93,7 +93,7 @@ try:
 except:
 	STAR_CACHE_DICTION = {}
 
-##Function to search star actor of movie
+##Function to search, and cache, star actor of movies
 def star_actor_tweets(searchterm):
 	unique_identifier = "star_{}".format(searchterm)
 	if unique_identifier in STAR_CACHE_DICTION:
@@ -108,6 +108,7 @@ def star_actor_tweets(searchterm):
 		r.write(json.dumps(STAR_CACHE_DICTION))
 		r.close()
 	return star_results
+
 #Invoking to test cache files and get dictionary caches for the following movies:
 movies_list = ["The Wizard of Oz", "King Kong", "Star Wars: Episode VI - Return of the Jedi"]
 wizard_oz = get_movie_cache("The Wizard of Oz")
@@ -121,7 +122,8 @@ movie_cache_list.append(kingkong)
 movie_cache_list.append(return_jedi)
 
 umich = get_twitter_cache("umich")
-actor = star_actor_tweets("Judy Garland")
+
+
 
 
 
@@ -146,9 +148,14 @@ class TwitterUser():
 		
 	
 ## FINISH CLASS TWEET
-#class Tweet():
-#	def __init__(self, tweet_dict):
-	#	if 'text'
+class Tweet():
+	def __init__(self, tweet_dict={}):
+		self.text = tweet_dict['statuses'][0]['text']
+		self.tweet_id = tweet_dict['statuses'][0]['id']
+		self.screen_name = tweet_dict['statuses'][0]['user']['screen_name']
+		self.movie_search = tweet_dict['search_metadata']['query'].replace("+"," ")
+		self.num_favs = tweet_dict['statuses'][0]['favorite_count']
+		self.retweets = tweet_dict['statuses'][0]['retweet_count']
 
 
 #Class invocation
@@ -161,6 +168,67 @@ for movie in movie_cache_list:
 	jedi_class = Movie(movie_cache_list[1])
 	wizard_class = Movie(movie_cache_list[2])
 
+#Creating a new list of Movie class instances
+movie_class_list = []
+movie_class_list.append(kong_class)
+movie_class_list.append(jedi_class)
+movie_class_list.append(wizard_class)
+
+
+#Invocations to Twitter functions to search for movie's top actor
+kong_top_actor = star_actor_tweets(kong_class.actors[0])
+jedi_top_actor = star_actor_tweets(jedi_class.actors[0])
+wizard_top_actor = star_actor_tweets(wizard_class.actors[0])
+
+#Accumulating all Tweet dictionaries into one list 
+star_cache_list = []
+star_cache_list.append(kong_top_actor)
+star_cache_list.append(jedi_top_actor)
+star_cache_list.append(wizard_top_actor)
+
+#Creating a list of instances of class Tweet using star_cache_list
+for star in star_cache_list:
+	kong_star = Tweet(star_cache_list[0])
+	jedi_star = Tweet(star_cache_list[1])
+	wizard_star = Tweet(star_cache_list[2])
+
+#Creating a new list of Tweet class instances
+star_class_list = []
+star_class_list.append(kong_star)
+star_class_list.append(jedi_star)
+star_class_list.append(wizard_star)
+
+#Finding all users who posted and were mentioned in tweets
+def get_twitter_users(string_of_users):
+	pattern = r'(?<=^|(?<=[^a-zA-Z0-9-_\.]))@([A-Za-z]+[A-Za-z0-9_]+)'
+	result = re.findall(pattern, string_of_users)
+	return result
+
+user_list = []
+user_list.append(kong_star.screen_name)
+user_list.append(jedi_star.screen_name)
+user_list.append(wizard_star.screen_name)
+for i in get_twitter_users(kong_star.text):
+	if i != []:
+		user_list.append(i)
+
+for k in get_twitter_users(jedi_star.text):
+	if k != []:
+		user_list.append(k)
+
+for l in get_twitter_users(wizard_star.text):
+	if l != []:
+		user_list.append(l)
+
+#Creating a list of instances of class TwitterUser using user_list
+user_instances_list = []
+for user in user_list:
+	user_instances_list.append(get_twitter_cache(user))
+
+user_class_list = []
+for user_instance in user_instances_list:
+	user_class_list.append(TwitterUser(user_instance))
+
 
 #Database file setup
 conn = sqlite3.connect('206_finalproject.db')
@@ -168,20 +236,24 @@ cur = conn.cursor()
 cur.execute('DROP TABLE IF EXISTS Tweets')
 cur.execute('DROP TABLE IF EXISTS Users')
 cur.execute('DROP TABLE IF EXISTS Movies')
-cur.execute('CREATE TABLE Tweets (tweet_id TEXT PRIMARY KEY, text TEXT, screen_name TEXT, movie_title TEXT, num_favs INTEGER, retweets INTEGER, FOREIGN KEY (screen_name) REFERENCES Users(screen_name), FOREIGN KEY (movie_title) REFERENCES Movies(movie_title))')
+cur.execute('CREATE TABLE Tweets (tweet_id TEXT PRIMARY KEY, text TEXT, screen_name TEXT, movie_search TEXT, num_favs INTEGER, retweets INTEGER, FOREIGN KEY (screen_name) REFERENCES Users(screen_name), FOREIGN KEY (movie_search) REFERENCES Movies(top_actor))')
 cur.execute('CREATE TABLE Users (user_id TEXT PRIMARY KEY, screen_name TEXT, num_favs INTEGER)')
 cur.execute('CREATE TABLE Movies (movie_id TEXT PRIMARY KEY, movie_title TEXT, director TEXT, num_languages INTEGER, imdb_rating INTEGER, top_actor TEXT)')
 
-#Adding data to User table
-cur.execute("INSERT INTO Users (user_id, screen_name, num_favs) VALUES (?, ?, ?)", (twitteruser_class.id, twitteruser_class.screen_name, twitteruser_class.favourites_count))
+#Adding all user data to Users table
+for user in user_class_list:
+	cur.execute("INSERT INTO Users (user_id, screen_name, num_favs) VALUES (?, ?, ?)", (user.id, user.screen_name, user.favourites_count))
 conn.commit()
 
-#Adding data to Movie table
-cur.execute("INSERT INTO Movies (movie_id, movie_title, director, num_languages, imdb_rating, top_actor) VALUES (?, ?, ?, ?, ?, ?)", (wizard_class.imdbID, wizard_class.title, wizard_class.director, wizard_class.language, wizard_class.imdb_rating, wizard_class.actors[0]))
+#Adding all movie data to Movies table
+for movie in movie_class_list:
+	cur.execute("INSERT INTO Movies (movie_id, movie_title, director, num_languages, imdb_rating, top_actor) VALUES (?, ?, ?, ?, ?, ?)", (movie.imdbID, movie.title, movie.director, movie.language, movie.imdb_rating, movie.actors[0]))
 conn.commit()
 
 #Adding data to Tweets table:
-
+for tweet in star_class_list:
+	cur.execute("INSERT INTO Tweets (tweet_id, text, screen_name, movie_search, num_favs, retweets) VALUES (?, ?, ?, ?, ?, ?)", (tweet.tweet_id, tweet.text, tweet.screen_name, tweet.movie_search, tweet.num_favs, tweet.retweets))
+conn.commit()
 
 # Put your tests here, with any edits you now need from when you turned them in with your project plan.
 class Task1(unittest.TestCase):
