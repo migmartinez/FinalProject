@@ -12,7 +12,7 @@ from collections import Counter
 import sys
 import codecs
 import requests
-import omdb
+
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
 
@@ -108,9 +108,18 @@ def star_actor_tweets(searchterm):
 		r.write(json.dumps(STAR_CACHE_DICTION))
 		r.close()
 	return star_results
-#Invoking to test cache files
-
+#Invoking to test cache files and get dictionary caches for the following movies:
+movies_list = ["The Wizard of Oz", "King Kong", "Star Wars: Episode VI - Return of the Jedi"]
 wizard_oz = get_movie_cache("The Wizard of Oz")
+kingkong = get_movie_cache("King Kong")
+return_jedi = get_movie_cache("Star Wars: Episode VI - Return of the Jedi")
+
+#Accumulating those above dictionaries into one list
+movie_cache_list = []
+movie_cache_list.append(wizard_oz)
+movie_cache_list.append(kingkong)
+movie_cache_list.append(return_jedi)
+
 umich = get_twitter_cache("umich")
 actor = star_actor_tweets("Judy Garland")
 
@@ -143,8 +152,14 @@ class TwitterUser():
 
 
 #Class invocation
-wizard_class = Movie(wizard_oz)
+
 twitteruser_class = TwitterUser(umich)
+
+#Creating a list of instances of class Movie using movie_cache_list
+for movie in movie_cache_list:
+	kong_class = Movie(movie_cache_list[0])
+	jedi_class = Movie(movie_cache_list[1])
+	wizard_class = Movie(movie_cache_list[2])
 
 
 #Database file setup
