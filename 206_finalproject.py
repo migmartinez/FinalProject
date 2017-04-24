@@ -4,7 +4,7 @@ import unittest
 import itertools
 import collections
 import tweepy
-import twitter_info # same deal as always...
+import twitter_info
 import json
 import sqlite3
 import re
@@ -72,7 +72,11 @@ def get_movie_cache(name):
 		omdb_results = OMDB_CACHE_DICTION[unique_identifier]
 	else:
 		print('getting data from internet for movie', name)
-		omdb_results = omdb.title(name)
+		baseurl = "http://www.omdbapi.com/?t="
+		url = baseurl + name
+		final_url = url.replace(" ","+")
+		response = requests.get(final_url)
+		omdb_results = json.loads(response.text)
 		OMDB_CACHE_DICTION[unique_identifier] = omdb_results
 		g = open(OMDB_CACHE_FNAME, 'w')
 		g.write(json.dumps(OMDB_CACHE_DICTION))
@@ -115,52 +119,22 @@ actor = star_actor_tweets("Judy Garland")
 #Class Setup
 class Movie():
 	def __init__(self, movie_dict={}):
-		if 'imdb_id' in movie_dict:
-			self.imdb_id = movie_dict['imdb_id']
-		else:
-			self.imdb_id = ""
+		self.imdbID = movie_dict['imdbID']
+		self.title = movie_dict['Title']
+		self.director = movie_dict['Director']
+		self.imdb_rating = movie_dict['imdbRating']
+		self.actors = movie_dict['Actors'].split(',')
+		self.language = len(movie_dict['Language'].split())
 
-		if 'title' in movie_dict:
-			self.title = movie_dict['title']
-		else:
-			self.title = ""
-
-		if 'director' in movie_dict:
-			self.director = movie_dict['director']
-		else:
-			self.director = ""
-
-		if 'imdb_rating' in movie_dict:
-			self.imdb_rating = movie_dict['imdb_rating']
-		else:
-			self.imdb_rating = ""
-
-		if 'actors' in movie_dict:
-			self.actors = movie_dict['actors'].split(',')
-		else:
-			self.actors = []
-
-		if 'language' in movie_dict:
-			self.language = len(movie_dict['language'].split())
-		else:
-			self.language = 0
+	def __str__(self):
+		return "{} was directed by {} and received an aggregate score of {} on IMBD".format(self.title, self.director, self.imdb_rating)
 
 class TwitterUser():
 	def __init__(self, tweet_dict):
-		if 'screen_name' in tweet_dict[0]['user']:
-			self.screen_name = tweet_dict[0]['user']['screen_name']
-		else:
-			self.screen_name = ""
-
-		if 'id' in tweet_dict[0]['user']:
-			self.id = tweet_dict[0]['user']['id']
-		else:
-			self.id = 0
-
-		if 'favourites_count' in tweet_dict[0]['user']:
-			self.favourites_count = tweet_dict[0]['user']['favourites_count']
-		else:
-			self.favourites_count = 0
+		self.screen_name = tweet_dict[0]['user']['screen_name']
+		self.id = tweet_dict[0]['user']['id']
+		self.favourites_count = tweet_dict[0]['user']['favourites_count']
+		
 	
 ## FINISH CLASS TWEET
 #class Tweet():
@@ -188,7 +162,7 @@ cur.execute("INSERT INTO Users (user_id, screen_name, num_favs) VALUES (?, ?, ?)
 conn.commit()
 
 #Adding data to Movie table
-cur.execute("INSERT INTO Movies (movie_id, movie_title, director, num_languages, imdb_rating, top_actor) VALUES (?, ?, ?, ?, ?, ?)", (wizard_class.imdb_id, wizard_class.title, wizard_class.director, wizard_class.language, wizard_class.imdb_rating, wizard_class.actors[0]))
+cur.execute("INSERT INTO Movies (movie_id, movie_title, director, num_languages, imdb_rating, top_actor) VALUES (?, ?, ?, ?, ?, ?)", (wizard_class.imdbID, wizard_class.title, wizard_class.director, wizard_class.language, wizard_class.imdb_rating, wizard_class.actors[0]))
 conn.commit()
 
 #Adding data to Tweets table:
@@ -207,8 +181,8 @@ class Task1(unittest.TestCase):
 		f.close()
 		self.assertEqual(type(s), type(""), "Caching is not working correctly for OMBD")
 	def test_movie_str(self):
-		m = Movie("The Wizard of Oz")
-		self.assertEqual(type(m.__str__()), type(""), "testing type of __str__ method, should be str")
+		wizard_class = Movie(wizard_oz)
+		self.assertEqual(type(wizard_class.__str__()), type(""), "testing type of __str__ method, should be str")
 	def test_num_languages(self):
 		wizard_class = Movie(wizard_oz)
 		self.assertEqual(wizard_class.language, 1, "testing that wizard of oz has 1 language")
