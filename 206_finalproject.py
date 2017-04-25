@@ -1,5 +1,7 @@
 # MIGUEL MARTINEZ
-# Put all import statements you need here.
+# SI 206 Final Project
+# Import Statements:
+
 import unittest
 import itertools
 import collections
@@ -14,9 +16,9 @@ import codecs
 import requests
 import datetime
 
+
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
 
-# Begin filling in instructions....
 ## Tweepy setup below to cache twitter data, make sure that twitter_info file is present in directory.
 consumer_key = twitter_info.consumer_key
 consumer_secret = twitter_info.consumer_secret
@@ -51,11 +53,10 @@ def get_twitter_cache(handle):
 		f = open(TWITTER_CACHE_FNAME,'w')
 		f.write(json.dumps(TWITTER_CACHE_DICTION))
 		f.close()
-
 	return twitter_results
 
 ## OMBD CACHING BELOW
-OMDB_CACHE_FNAME = "SI206_finalproject_OMBDcache.json"
+OMDB_CACHE_FNAME = "SI206_finalproject_OMDBcache.json"
 try:
 	omdb_cache_file = open(OMDB_CACHE_FNAME,'r')
 	omdb_cache_contents = omdb_cache_file.read()
@@ -83,7 +84,7 @@ def get_movie_cache(name):
 		g.close()
 	return omdb_results
 
-## STAR CACHING BELOW TO ANALYZE JSON OBJECT
+## STAR CACHING BELOW 
 STAR_CACHE_FNAME = "SI206_finalproject_starcache.json"
 try:
 	star_cache_file = open(STAR_CACHE_FNAME,'r')
@@ -93,41 +94,22 @@ try:
 except:
 	STAR_CACHE_DICTION = {}
 
-##Function to search, and cache, star actor of movies
-def star_actor_tweets(searchterm):
-	unique_identifier = "star_{}".format(searchterm)
-	if unique_identifier in STAR_CACHE_DICTION:
-		print('using cached data for star', searchterm)
-		star_results = STAR_CACHE_DICTION[unique_identifier]
-	else:
-		print('getting data from tweets from Twitter for star', searchterm)
-		api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
-		star_results = api.search(q = searchterm, count = 5)
-		STAR_CACHE_DICTION[unique_identifier] = star_results
-		r = open(STAR_CACHE_FNAME, 'w')
-		r.write(json.dumps(STAR_CACHE_DICTION))
-		r.close()
-	return star_results
 
-#Invoking to test cache files and get dictionary caches for the following movies:
+
+# Invoking to test cache files and get dictionary caches for the following movies:
 movies_list = ["The Wizard of Oz", "King Kong", "Star Wars: Episode VI - Return of the Jedi"]
 wizard_oz = get_movie_cache("The Wizard of Oz")
 kingkong = get_movie_cache("King Kong")
 return_jedi = get_movie_cache("Star Wars: Episode VI - Return of the Jedi")
 
-#Accumulating those above dictionaries into one list
+# Accumulating those above dictionaries into one list
 movie_cache_list = []
 movie_cache_list.append(wizard_oz)
 movie_cache_list.append(kingkong)
 movie_cache_list.append(return_jedi)
 
-umich = get_twitter_cache("umich")
 
-
-
-
-
-#Class Setup
+# Class Setup
 class Movie():
 	def __init__(self, movie_dict={}):
 		self.imdbID = movie_dict['imdbID']
@@ -140,14 +122,29 @@ class Movie():
 	def __str__(self):
 		return "{} was directed by {} and received an aggregate score of {} on IMBD".format(self.title, self.director, self.imdb_rating)
 
+	def star_actor_tweets(self, searchterm):
+		unique_identifier = "star_{}".format(searchterm)
+		if unique_identifier in STAR_CACHE_DICTION:
+			print('using cached data for star', searchterm)
+			star_results = STAR_CACHE_DICTION[unique_identifier]
+		else:
+			print('getting data from tweets from Twitter for star', searchterm)
+			api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
+			star_results = api.search(q = searchterm, count = 5)
+			STAR_CACHE_DICTION[unique_identifier] = star_results
+			r = open(STAR_CACHE_FNAME, 'w')
+			r.write(json.dumps(STAR_CACHE_DICTION))
+			r.close()
+		return star_results
+
 class TwitterUser():
-	def __init__(self, tweet_dict):
+	def __init__(self, tweet_dict={}):
 		self.screen_name = tweet_dict[0]['user']['screen_name']
 		self.id = tweet_dict[0]['user']['id']
 		self.favourites_count = tweet_dict[0]['user']['favourites_count']
 		
 	
-## FINISH CLASS TWEET
+
 class Tweet():
 	def __init__(self, tweet_dict={}):
 		self.text = tweet_dict['statuses'][0]['text']
@@ -158,47 +155,51 @@ class Tweet():
 		self.retweets = tweet_dict['statuses'][0]['retweet_count']
 
 
-#Class invocation
 
-twitteruser_class = TwitterUser(umich)
-
-#Creating a list of instances of class Movie using movie_cache_list
+# Creating a list of instances of class Movie using movie_cache_list
 for movie in movie_cache_list:
 	kong_class = Movie(movie_cache_list[0])
 	jedi_class = Movie(movie_cache_list[1])
 	wizard_class = Movie(movie_cache_list[2])
 
-#Creating a new list of Movie class instances
+# Creating a new list of Movie class instances
 movie_class_list = []
 movie_class_list.append(kong_class)
 movie_class_list.append(jedi_class)
 movie_class_list.append(wizard_class)
 
 
-#Invocations to Twitter functions to search for movie's top actor
-kong_top_actor = star_actor_tweets(kong_class.actors[0])
-jedi_top_actor = star_actor_tweets(jedi_class.actors[0])
-wizard_top_actor = star_actor_tweets(wizard_class.actors[0])
+# Invocations to Twitter functions to search for movie's top actor
 
-#Accumulating all Tweet dictionaries into one list 
+kong_actor = kong_class.actors[0]
+kong_top_actor = kong_class.star_actor_tweets(kong_actor)
+
+jedi_actor = jedi_class.actors[0]
+jedi_top_actor = jedi_class.star_actor_tweets(jedi_actor)
+
+wizard_actor = wizard_class.actors[0]
+wizard_top_actor = wizard_class.star_actor_tweets(wizard_actor)
+
+
+# Accumulating all Tweet dictionaries into one list 
 star_cache_list = []
 star_cache_list.append(kong_top_actor)
 star_cache_list.append(jedi_top_actor)
 star_cache_list.append(wizard_top_actor)
 
-#Creating a list of instances of class Tweet using star_cache_list
+# Creating a list of instances of class Tweet using star_cache_list
 for star in star_cache_list:
 	kong_star = Tweet(star_cache_list[0])
 	jedi_star = Tweet(star_cache_list[1])
 	wizard_star = Tweet(star_cache_list[2])
 
-#Creating a new list of Tweet class instances
+# Creating a new list of Tweet class instances
 star_class_list = []
 star_class_list.append(kong_star)
 star_class_list.append(jedi_star)
 star_class_list.append(wizard_star)
 
-#Finding all users who posted and were mentioned in tweets
+# Finding all users who posted and were mentioned in tweets
 def get_twitter_users(string_of_users):
 	pattern = r'(?<=^|(?<=[^a-zA-Z0-9-_\.]))@([A-Za-z]+[A-Za-z0-9_]+)'
 	result = re.findall(pattern, string_of_users)
@@ -250,54 +251,66 @@ for movie in movie_class_list:
 	cur.execute("INSERT INTO Movies (movie_id, movie_title, director, num_languages, imdb_rating, top_actor) VALUES (?, ?, ?, ?, ?, ?)", (movie.imdbID, movie.title, movie.director, movie.language, movie.imdb_rating, movie.actors[0]))
 conn.commit()
 
-#Adding data to Tweets table:
+#Adding all tweet data to Tweets table:
 for tweet in star_class_list:
 	cur.execute("INSERT INTO Tweets (tweet_id, text, screen_name, movie_search, num_favs, retweets) VALUES (?, ?, ?, ?, ?, ?)", (tweet.tweet_id, tweet.text, tweet.screen_name, tweet.movie_search, tweet.num_favs, tweet.retweets))
 conn.commit()
 
 
-#Queries
-query = 'SELECT Tweets.text, Tweets.screen_name FROM Tweets INNER JOIN Users ON Tweets.screen_name = Users.screen_name'
-joined_result = []
-for tup in cur.execute(query):
-	joined_result.append(tup)
-print(joined_result)
+#QUERIES
 
+# The first query selects tweets and screen names where screen names are equal for the Tweets and Users tables, and pairs them together in a tuple.
+query1 = 'SELECT Tweets.text, Tweets.screen_name FROM Tweets INNER JOIN Users ON Tweets.screen_name = Users.screen_name'
+query1_result = []
+for tup in cur.execute(query1):
+	query1_result.append(tup)
+
+
+# The second query selects all users' screen names and total number of favorites from the Users table only if that user has over 100 favorites.
+# The data is then sorted by most popular user first with least popular last
 query2 = 'SELECT Users.screen_name, Users.num_favs FROM Users WHERE num_favs > 100'
-popular_users = []
+query2_result = []
 for pop in cur.execute(query2):
-	popular_users.append(pop)
-ordered_users = sorted(popular_users, key = lambda x: x[1], reverse = True)
-print(ordered_users)
+	query2_result.append(pop)
+ordered_users = sorted(query2_result, key = lambda x: x[1], reverse = True)
 
-#Working with queries, outputting to text file
+
+# The third query combines all the movies, the screennames of the individual who posted the tweet, and the top actor in the movie that they reference in their Tweet.
+query3 = 'SELECT Movies.movie_title, Tweets.screen_name, Tweets.movie_search FROM Movies INNER JOIN Tweets ON Movies.top_actor = Tweets.movie_search'
+query3_result = []
+for t in cur.execute(query3):
+	query3_result.append(t)
+
+
+# Using datetime module to always have currently date in a variable for output purposes
 now = datetime.datetime.now()
-formatted = now.strftime("%Y-%m-%d")
+datepattern = now.strftime("%Y-%m-%d")
+
+# Counter setup to find most common words in all tweets
+c = Counter()
+for tupz in query1_result:
+	for word in tupz[0].split(" "):
+		c[word] += 1
+common_words = c.most_common(1)
+
+
+# OUTPUTTING TO TEXT FILE
 with open("SummaryStats.txt", "w") as infile:
-	print("Summary Stats for: The Wizard of Oz, King Kong, and Star Wars: Episode VI - Return of the Jedi on {}".format(formatted), file=infile)
+	print("Summary Stats for: The Wizard of Oz, King Kong, and Star Wars: Episode VI - Return of the Jedi on {}".format(datepattern), file=infile)
+	print("\n", file=infile)
 	print("Popular Users: ", file=infile)
 	for user in ordered_users:
-		print("User: {}".format(user[0]), file=infile), print("Total Favs: {}".format(user[1]), file=infile)
+		print("+{}".format(user[0]), file=infile), print("Total Favs: {}".format(user[1]), file=infile), print("\n", file=infile)
+	for tup1 in query3_result:
+		print("{} tweeted about {} from the movie {}".format(tup1[1], tup1[2], tup1[0]), file=infile)
+	print("The most common word used was '{}' at '{}' uses".format(common_words[0][0], common_words[0][1]), file=infile)
+	print("\n", file=infile)
+	print("Full Tweets: ", file=infile)
+	for tup2 in query1_result:
+		print("+{}: {}".format(tup2[1], tup2[0]), file=infile)
+infile.close()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Put your tests here, with any edits you now need from when you turned them in with your project plan.
+# Tests are below.
 class Task1(unittest.TestCase):
 	def test_twitter_cache(self):
 		f = open("SI206_finalproject_twittercache.json", "r")
@@ -305,7 +318,7 @@ class Task1(unittest.TestCase):
 		f.close()
 		self.assertEqual(type(s),type(""), "Caching is not working correctly for twitter")
 	def test_OMBD_cache(self):
-		f = open("SI206_finalproject_OMBDcache.json", "r")
+		f = open("SI206_finalproject_OMDBcache.json", "r")
 		s = f.read()
 		f.close()
 		self.assertEqual(type(s), type(""), "Caching is not working correctly for OMBD")
@@ -336,7 +349,17 @@ class Task1(unittest.TestCase):
 	def test_top_billed(self):
 		wizard_class = Movie(wizard_oz)
 		self.assertTrue("Judy Garland" in wizard_class.actors, "Testing that Judy Garland is correctly in the actors list for the Wizard of Oz movie")
+	def test_get_twitter_users(self):
+		example = "Breaking: Michigan’s Jabrill Peppers tested positive for a diluted sample at the NFL scouting combine. (via @AdamSchefter)"
+		result = get_twitter_users(example)
+		self.assertTrue("AdamSchefter" in result, "Testing that regex pattern works correctly to extract Twitter user from tweet")
+	def test_star_actor_tweets(self):
+		wizard_class = Movie(wizard_oz)
+		wizard_actor = wizard_class.actors[0]
+		wizard_top_actor = wizard_class.star_actor_tweets(wizard_actor)
+		self.assertEqual(type(wizard_top_actor), type({}), "Testing that the return type of star_actor_tweets class function is a dictionary")
 
-# Remember to invoke your tests so they will run! (Recommend using the verbosity=2 argument.)
+
+
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
