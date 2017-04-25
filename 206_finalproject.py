@@ -12,7 +12,7 @@ from collections import Counter
 import sys
 import codecs
 import requests
-
+import datetime
 
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
 
@@ -254,6 +254,48 @@ conn.commit()
 for tweet in star_class_list:
 	cur.execute("INSERT INTO Tweets (tweet_id, text, screen_name, movie_search, num_favs, retweets) VALUES (?, ?, ?, ?, ?, ?)", (tweet.tweet_id, tweet.text, tweet.screen_name, tweet.movie_search, tweet.num_favs, tweet.retweets))
 conn.commit()
+
+
+#Queries
+query = 'SELECT Tweets.text, Tweets.screen_name FROM Tweets INNER JOIN Users ON Tweets.screen_name = Users.screen_name'
+joined_result = []
+for tup in cur.execute(query):
+	joined_result.append(tup)
+print(joined_result)
+
+query2 = 'SELECT Users.screen_name, Users.num_favs FROM Users WHERE num_favs > 100'
+popular_users = []
+for pop in cur.execute(query2):
+	popular_users.append(pop)
+ordered_users = sorted(popular_users, key = lambda x: x[1], reverse = True)
+print(ordered_users)
+
+#Working with queries, outputting to text file
+now = datetime.datetime.now()
+formatted = now.strftime("%Y-%m-%d")
+with open("SummaryStats.txt", "w") as infile:
+	print("Summary Stats for: The Wizard of Oz, King Kong, and Star Wars: Episode VI - Return of the Jedi on {}".format(formatted), file=infile)
+	print("Popular Users: ", file=infile)
+	for user in ordered_users:
+		print("User: {}".format(user[0]), file=infile), print("Total Favs: {}".format(user[1]), file=infile)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Put your tests here, with any edits you now need from when you turned them in with your project plan.
 class Task1(unittest.TestCase):
