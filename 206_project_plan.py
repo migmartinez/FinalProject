@@ -30,7 +30,7 @@ class Task1(unittest.TestCase):
 		self.assertEqual(type(s), type(""), "Caching is not working correctly for OMBD")
 	def test_movie_str(self):
 		m = Movie("The Wizard of Oz")
-		self.asssertEqual(type(m.__str__()), type(""), "testing type of __str__ method, should be str")
+		self.assertEqual(type(m.__str__()), type(""), "testing type of __str__ method, should be str")
 	def test_num_languages(self):
 		m = Movie("The Wizard of Oz")
 		self.assertEqual(m.find_languages(), 1, "testing that wizard of oz has 1 language")
